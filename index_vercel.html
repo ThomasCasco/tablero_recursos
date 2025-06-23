@@ -903,10 +903,10 @@
     </div>
 
     <script>
-        // ===== CONFIGURACIÓN PARA VERCEL CON NGROK =====
+        // ===== CONFIGURACIÓN PARA VERCEL CON PROXY =====
         
-        // URL del servidor ngrok - CAMBIAR ESTA URL POR LA TUYA
-        const API_BASE_URL = 'https://peaceful-monitor-dashing.ngrok-free.app';
+        // URL relativa - Las peticiones serán redirigidas por Vercel al servidor ngrok
+        const API_BASE_URL = '';
         
         let recursos = [];
         let lastUpdateTime = null;
