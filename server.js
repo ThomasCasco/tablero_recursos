@@ -76,19 +76,23 @@ async function connectTableroDB() {
 // ===== FUNCIÓN PARA DETERMINAR ESTADO DEL RECURSO =====
 function determinarEstadoRecurso(recurso) {
     const operarios = recurso.Operarios;
-    const estado = recurso.Estado;
-    const motivoInterrup = recurso.MotivoInterrup;
+    const estado = recurso.Estado ? recurso.Estado.toString().trim() : '';
+    const motivoInterrup = recurso.MotivoInterrup ? recurso.MotivoInterrup.toString().trim() : '';
+
+    console.log(`🔍 Recurso ${recurso.Recurso || 'N/A'}: Estado="${estado}", Operarios=${operarios}, Motivo="${motivoInterrup}"`);
 
     // Prioridad 1: Sin operario
     if (!operarios || operarios === 0) {
+        console.log(`   → Sin operario`);
         return {
             estado: 'status-sin-operario',
-            estadoTexto: 'Sin Operario'
+            estadoTexto: 'Falta de Personal'
         };
     }
 
-    // Prioridad 2: Estados de producción
-    if (estado === 'EnProceso') {
+    // Prioridad 2: Estados de producción (comparación insensible a mayúsculas)
+    if (estado.toLowerCase() === 'enproceso' || estado.toLowerCase() === 'en proceso') {
+        console.log(`   → Produciendo`);
         return {
             estado: 'status-produciendo',
             estadoTexto: 'Produciendo'
@@ -96,7 +100,8 @@ function determinarEstadoRecurso(recurso) {
     }
 
     // Prioridad 2.5: Máquina iniciada pero no en proceso
-    if (estado === 'Iniciada') {
+    if (estado.toLowerCase() === 'iniciada') {
+        console.log(`   → Máquina Lista (Iniciada)`);
         return {
             estado: 'status-iniciada',
             estadoTexto: 'Máquina Lista'
@@ -104,13 +109,14 @@ function determinarEstadoRecurso(recurso) {
     }
 
     // Prioridad 3: Estado en pausa, analizar motivo
-    if (estado === 'EnPausa') {
-        const motivo = motivoInterrup?.toLowerCase() || '';
+    if (estado.toLowerCase() === 'enpausa' || estado.toLowerCase() === 'en pausa') {
+        const motivo = motivoInterrup.toLowerCase();
         
         // Mantenimiento (azul)
         if (motivo.includes('mant. eléctrico') || 
             motivo.includes('mant. mecánico') || 
             motivo.includes('limpieza de hornos')) {
+            console.log(`   → Mantenimiento`);
             return {
                 estado: 'status-mantenimiento',
                 estadoTexto: 'Mantenimiento'
@@ -121,6 +127,7 @@ function determinarEstadoRecurso(recurso) {
         if (motivo.includes('falta de materia prima') || 
             motivo.includes('falta materiales') || 
             motivo.includes('retiro de material')) {
+            console.log(`   → Falta Materiales`);
             return {
                 estado: 'status-falta-materiales',
                 estadoTexto: 'Falta Materiales'
@@ -132,6 +139,7 @@ function determinarEstadoRecurso(recurso) {
             motivo.includes('cambio de carrete') || 
             motivo.includes('cambio de color') || 
             motivo.includes('falta autocontrol')) {
+            console.log(`   → Set Up`);
             return {
                 estado: 'status-set-up',
                 estadoTexto: 'Set Up'
@@ -139,6 +147,7 @@ function determinarEstadoRecurso(recurso) {
         }
         
         // Detenido (rojo) - otros motivos
+        console.log(`   → Detenido (EnPausa sin motivo específico)`);
         return {
             estado: 'status-detenido',
             estadoTexto: 'Detenido'
@@ -146,6 +155,7 @@ function determinarEstadoRecurso(recurso) {
     }
 
     // Estado por defecto
+    console.log(`   → Estado por defecto: Detenido (estado no reconocido: "${estado}")`);
     return {
         estado: 'status-detenido',
         estadoTexto: 'Detenido'
