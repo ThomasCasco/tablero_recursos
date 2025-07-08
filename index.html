@@ -14,6 +14,7 @@
             --color-falta-materiales: #fb923c;
             --color-sin-operario: #f1f5f9;
             --color-set-up: #fef08a;
+            --color-iniciada: #e2e8f0;
             --color-primary: #ff6b6b;
             --color-text: #1e293b;
             --color-background: #f8fafc;
@@ -145,7 +146,7 @@
             display: grid;
             
             grid-template-columns: repeat(6, 1fr);
-            gap:15px;
+            gap: 10px;
         }
 
         .resource-box {
@@ -166,17 +167,17 @@
         }
 
         .resource-number {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             margin-bottom: 5px;
         }
 
         .resource-product {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             margin-bottom: 8px;
             line-height: 1.3;
-            height: 32px;
+            height: 34px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -184,7 +185,7 @@
         }
 
         .resource-time {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             margin-bottom: 8px;
             padding: 3px 6px;
@@ -196,7 +197,7 @@
         }
 
         .resource-info {
-            font-size: 12px;
+            font-size: 13px;
             margin-top: auto;
         }
 
@@ -204,7 +205,7 @@
             position: absolute;
             top: 12px;
             right: 12px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             color: rgba(0, 0, 0, 0.5);
         }
@@ -213,7 +214,7 @@
             position: absolute;
             bottom: 12px;
             right: 12px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             background-color: rgba(255, 255, 255, 0.3);
             padding: 2px 6px;
@@ -253,6 +254,17 @@
         .status-set-up {
             background-color: var(--color-set-up);
             color: #854d0e;
+        }
+
+        .status-iniciada {
+            background-color: var(--color-iniciada);
+            color: #475569;
+            animation: blinkInitiada 2s infinite;
+        }
+
+        @keyframes blinkInitiada {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.4; }
         }
 
         .legend {
@@ -309,7 +321,7 @@
 
             .grid-container {
                 grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-                gap: 15px;
+                gap: 10px;
             }
         }
 
@@ -410,6 +422,40 @@
             color: white;
         }
 
+        .autoplay-button {
+            flex: 0 0 auto;
+            min-width: 100px;
+            padding: 15px 16px;
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-left: 10px;
+        }
+
+        .autoplay-button:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #334155;
+        }
+
+        .autoplay-button.active {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
         .tab-content {
             display: none;
             background-color: var(--color-card);
@@ -440,6 +486,17 @@
         .stat-item.produciendo {
             background-color: #dcfce7;
             color: #166534;
+        }
+
+        .stat-item.iniciada {
+            background-color: #f1f5f9;
+            color: #475569;
+            animation: blinkStatInitiada 2s infinite;
+        }
+
+        @keyframes blinkStatInitiada {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.6; }
         }
 
         .stat-item.detenido {
@@ -657,6 +714,16 @@
                  border-bottom: 1px solid #e2e8f0;
              }
              
+             .autoplay-button {
+                 margin-left: 0;
+                 margin-top: 5px;
+                 font-size: 13px;
+                 padding: 12px 16px;
+                 border: none;
+                 border-bottom: 1px solid #e2e8f0;
+                 border-radius: 0;
+             }
+             
              .tab-button:last-child {
                  border-bottom: none;
              }
@@ -715,6 +782,13 @@
                             </div>
                         </div>
                         <div class="legend-item">
+                            <div class="legend-color status-iniciada"></div>
+                            <div class="legend-text">
+                                <strong>MÁQUINA LISTA</strong>
+                                Iniciada pero no arrancada
+                            </div>
+                        </div>
+                        <div class="legend-item">
                             <div class="legend-color status-detenido"></div>
                             <div class="legend-text">
                                 <strong>DETENIDO</strong>
@@ -769,6 +843,9 @@
                                 <button class="tab-button active" data-section="1">CABLES - SECCIÓN 1</button>
                                 <button class="tab-button" data-section="2">CABLES - SECCIÓN 2</button>
                                 <button class="tab-button" data-section="3">CABLES - SECCIÓN 3</button>
+                                <button class="autoplay-button" id="autoplay-button" title="Cambio automático cada 30s">
+                                    🔄 AUTO
+                                </button>
                         </div>
                             
                             <div class="tab-content active" id="seccion-1">
@@ -929,6 +1006,11 @@
             3: 0
         };
         
+        // Variables para autoplay de pestañas
+        let autoplayEnabled = false;
+        let autoplayInterval = null;
+        let autoplayTimer = 30000; // 30 segundos
+        
         // Variables para notificaciones
         let notificationsEnabled = false;
         let serviceWorkerRegistration = null;
@@ -1081,6 +1163,7 @@ Minutos de interrupción: ${recurso.minutosInterrupcion}`;
             const stats = {
                 total: recursosSeccion.length,
                 produciendo: 0,
+                iniciada: 0,
                 detenido: 0,
                 mantenimiento: 0,
                 otros: 0
@@ -1090,6 +1173,9 @@ Minutos de interrupción: ${recurso.minutosInterrupcion}`;
                 switch (recurso.estado) {
                     case 'status-produciendo':
                         stats.produciendo++;
+                        break;
+                    case 'status-iniciada':
+                        stats.iniciada++;
                         break;
                     case 'status-detenido':
                         stats.detenido++;
@@ -1119,6 +1205,7 @@ Minutos de interrupción: ${recurso.minutosInterrupcion}`;
             statsContainer.innerHTML = `
                 <div class="stat-item">Total: ${stats.total}</div>
                 <div class="stat-item produciendo">Produciendo: ${stats.produciendo}</div>
+                <div class="stat-item iniciada">Máquinas Listas: ${stats.iniciada}</div>
                 <div class="stat-item detenido">Detenidos: ${stats.detenido}</div>
                 <div class="stat-item mantenimiento">Mantenimiento: ${stats.mantenimiento}</div>
                 <div class="stat-item otros">Otros: ${stats.otros}</div>
@@ -1246,14 +1333,65 @@ Minutos de interrupción: ${recurso.minutosInterrupcion}`;
             currentSection = seccion;
         }
 
+        // Funciones para autoplay de pestañas
+        function iniciarAutoplay() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+            }
+            
+            autoplayInterval = setInterval(() => {
+                // Cambiar a la siguiente sección (1 -> 2 -> 3 -> 1)
+                const nextSection = currentSection >= 3 ? 1 : currentSection + 1;
+                cambiarPestana(nextSection);
+            }, autoplayTimer);
+            
+            autoplayEnabled = true;
+            const button = document.getElementById('autoplay-button');
+            button.classList.add('active');
+            button.innerHTML = '⏸️ AUTO';
+            button.title = 'Desactivar cambio automático';
+            
+            console.log('🔄 Autoplay de pestañas iniciado (30s)');
+        }
+
+        function detenerAutoplay() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+                autoplayInterval = null;
+            }
+            
+            autoplayEnabled = false;
+            const button = document.getElementById('autoplay-button');
+            button.classList.remove('active');
+            button.innerHTML = '🔄 AUTO';
+            button.title = 'Cambio automático cada 30s';
+            
+            console.log('⏹️ Autoplay de pestañas detenido');
+        }
+
+        function toggleAutoplay() {
+            if (autoplayEnabled) {
+                detenerAutoplay();
+            } else {
+                iniciarAutoplay();
+            }
+        }
+
         // Configurar eventos de pestañas
         function configurarEventosPestanas() {
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const seccion = parseInt(e.target.getAttribute('data-section'));
+                    // Si el autoplay está activo y el usuario hace click manual, detenerlo
+                    if (autoplayEnabled) {
+                        detenerAutoplay();
+                    }
                     cambiarPestana(seccion);
                 });
             });
+            
+            // Configurar botón de autoplay
+            document.getElementById('autoplay-button').addEventListener('click', toggleAutoplay);
         }
 
         // Inicializar Service Worker
