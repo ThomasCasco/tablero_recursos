@@ -6,7 +6,7 @@
       "source": "/api/:path*",
       "destination": "https://peaceful-monitor-dashing.ngrok-free.app/api/:path*"
     },
-    { "source": "/(.*)", "destination": "/index_vercel.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
@@ -23,4 +23,4 @@
       ]
     }
   ]
-} 
+}
