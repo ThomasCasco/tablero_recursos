@@ -86,6 +86,121 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            position: relative;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: -45px;
+            right: 0;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .user-info {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Responsive para el header */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .logo-title {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .logo img {
+                max-width: 80px;
+                height: auto;
+            }
+
+            .title h1 {
+                font-size: 18px;
+                margin: 10px 0 5px 0;
+            }
+
+            .title h2 {
+                font-size: 14px;
+            }
+
+            .date-time {
+                position: relative;
+                width: 100%;
+                max-width: 300px;
+                align-items: center;
+                text-align: center;
+            }
+
+            .logout-btn {
+                position: static;
+                margin-bottom: 10px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .user-info {
+                font-size: 10px;
+                margin-bottom: 8px;
+            }
+
+            #current-date,
+            #current-time {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+            }
+
+            .logout-btn {
+                padding: 5px 10px;
+                font-size: 10px;
+                border-radius: 4px;
+            }
+
+            .user-info {
+                font-size: 9px;
+                margin-bottom: 6px;
+            }
+
+            .date-time {
+                padding: 8px 15px;
+                font-size: 11px;
+            }
+
+            #current-date,
+            #current-time {
+                font-size: 11px;
+            }
         }
 
         .main-content {
@@ -759,6 +874,8 @@
                 </div>
             </div>
             <div class="date-time">
+                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+                <div class="user-info">Usuario: <span id="current-user"></span></div>
                 <div id="current-date">Fecha: <span id="today-date"></span></div>
                 <div id="current-time">Hora: <span id="time"></span></div>
             </div>
@@ -986,6 +1103,63 @@
     </div>
 
     <script>
+        // ===== VERIFICACIÓN DE AUTENTICACIÓN =====
+        function checkAuthentication() {
+            const token = localStorage.getItem('imsa_auth_token');
+            const user = localStorage.getItem('imsa_auth_user');
+            const loginTime = localStorage.getItem('imsa_auth_time');
+            
+            if (!token || !user || !loginTime) {
+                // No hay datos de autenticación, redirigir al login
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            // Verificar si la sesión no ha expirado (24 horas)
+            const now = Date.now();
+            const sessionAge = now - parseInt(loginTime);
+            const maxAge = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+            
+            if (sessionAge >= maxAge) {
+                // Sesión expirada, limpiar datos y redirigir
+                localStorage.removeItem('imsa_auth_token');
+                localStorage.removeItem('imsa_auth_user');
+                localStorage.removeItem('imsa_auth_time');
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                // Limpiar datos de autenticación
+                localStorage.removeItem('imsa_auth_token');
+                localStorage.removeItem('imsa_auth_user');
+                localStorage.removeItem('imsa_auth_time');
+                
+                // Redirigir al login
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Función para inicializar información del usuario
+        function initializeUserInfo() {
+            const user = localStorage.getItem('imsa_auth_user');
+            if (user) {
+                document.getElementById('current-user').textContent = user;
+            }
+        }
+
+        // Verificar autenticación al cargar la página
+        if (!checkAuthentication()) {
+            // Si no está autenticado, el usuario será redirigido automáticamente
+            // No continuar con la ejecución del script
+            throw new Error('Usuario no autenticado');
+        }
+
         // ===== CONFIGURACIÓN PARA VERCEL CON PROXY =====
         
         // URL relativa - Las peticiones serán redirigidas por Vercel al servidor ngrok
@@ -1694,6 +1868,7 @@ Minutos de interrupción: ${recurso.minutosInterrupcion}`;
             });
             
             updateDateTime();
+            initializeUserInfo();
             configurarEventosPestanas();
             configurarEventosNotificaciones();
             
